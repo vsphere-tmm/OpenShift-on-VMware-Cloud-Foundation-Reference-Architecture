@@ -1,33 +1,63 @@
 apiVersion: v1
-baseDomain: vmware.env.com
-proxy:
-  httpProxy: http://10.244.x.x:3128
-  noProxy: 10.0.0.0/8,192.168.0.0/16,172.0.0.0/11
+baseDomain: ocp.isvlab.vmware.com
 compute:
-- hyperthreading: Enabled
+- architecture: amd64
+  hyperthreading: Enabled
   name: worker
-  replicas: 0
+  platform:
+    vsphere:
+      cpus: 16
+      coresPerSocket: 8
+      memoryMB: 32768
+  replicas: 4
 controlPlane:
+  architecture: amd64
   hyperthreading: Enabled
   name: master
+  platform:
+    vsphere:
+      cpus: 8
+      coresPerSocket: 4
+      memoryMB: 16384
   replicas: 3
 metadata:
-  name: ocp-c0
+  creationTimestamp: null
+  name: ocp413-c1
 networking:
-  networkType: ncp
   clusterNetwork:
-  - cidr: 192.168.16.0/20
-    hostPrefix: 24
-  machineCIDR: 192.168.3.0/24
+  - cidr: 10.64.0.0/14
+    hostPrefix: 23
+  machineNetwork:
+  - cidr: 172.16.62.0/26
+  networkType: antrea
   serviceNetwork:
-  - 172.30.0.0/16
+  - 192.168.64.0/18
 platform:
   vsphere:
-    vcenter: 172.31.x.x
-    username: administrator@vsphere.local
-    password: xxxx
-    datacenter: datacenter1
-    defaultDatastore: VxRail-Virtual-SAN-Datastore-b487f80c-1f4f-4606-9e54-c447fb0a1951
-fips: false
-pullSecret: 'xxxx' 
-sshKey: 'ssh-rsa xxxx'
+    apiVIPs:
+    - 172.16.62.5
+    failureDomains:
+    - name: generated-failure-domain
+      region: generated-region
+      server: wdc-m01-vc01.vcf02.isvlab.vmware.com
+      topology:
+        computeCluster: /wdc-m01-dc01/host/wdc-m01-cl01
+        datacenter: wdc-m01-dc01
+        datastore: /wdc-m01-dc01/datastore/wdc-m01-cl01-ds-vsan01
+        networks:
+        - ocp-segment
+        resourcePool: /wdc-m01-dc01/host/wdc-m01-cl01/Resources/ocp413-c1-antrea
+      zone: generated-zone
+    ingressVIPs:
+    - 172.16.62.6
+    vcenters:
+    - datacenters:
+      - wdc-m01-dc01
+      password: ********
+      port: 443
+      server: wdc-m01-vc01.vcf02.isvlab.vmware.com
+      user: administrator@vsphere.local
+publish: External
+pullSecret: '{"auths":{"cloud.openshift.com":{"auth":"********...","email":"********@broadcom.com"}}}'
+sshKey: |
+  ssh-ed25519 ********
