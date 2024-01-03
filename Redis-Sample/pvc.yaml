@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fileserver-claim
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: “vsan-raid5-sc”
+  volumeName: fileserver
+  resources:
+requests:
+      storage: 1G
